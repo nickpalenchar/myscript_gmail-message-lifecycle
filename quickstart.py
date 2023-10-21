@@ -9,7 +9,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 # If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.metadata']
+SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
 # LABEL ID's
 # These were queried from service.users().labels().list(userId='me).execute()
@@ -45,16 +45,19 @@ def main():
         service = build('gmail', 'v1', credentials=creds)
         #results = service.users().labels().list(userId='me').execute()
 
-        results = service.users().messages().list(userId='me', labelIds=[label_30d, 'INBOX']).execute()
-        breakpoint()
-        labels = results.get('labels', [])
+        results = service.users().messages().list(userId='me', labelIds=[label_30d, 'INBOX'], q='before:2023/10/01').execute()
+        messages = results.get('messages', [])
 
-        if not labels:
-            print('No labels found.')
+        if not messages:
+            print('NO messages to delet ')
             return
-        print('Labels:')
-        for label in labels:
-            print(label['name'], label['id'])
+
+        for message in messages:
+            message_data = service.users().messages().get(userId='me', id=message['id']).execute()
+            print(message_data)
+            breakpoint()
+            break
+            pass
 
     except HttpError as error:
         # TODO(developer) - Handle errors from gmail API.
