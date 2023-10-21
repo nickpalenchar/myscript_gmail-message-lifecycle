@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import os.path
 import datetime
+import logging as log
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -10,7 +11,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 # If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.modify']
 
 # LABEL ID's
 # These were queried from service.users().labels().list(userId='me).execute()
@@ -53,19 +54,18 @@ def main():
         messages = results.get('messages', [])
 
         if not messages:
-            print('NO messages to delet ')
+            log.warn('NO messages to delet ')
             return
 
+        log.info(f'Trashing {len(messages)} messages')
         for message in messages:
-            message_data = service.users().messages().get(userId='me', id=message['id']).execute()
-            print(message_data)
-            breakpoint()
-            break
-            pass
+            result = service.users().messages().trash(userId='me', id=message['id']).execute()
+            print(result)
+            #message_data = service.users().messages().get(userId='me', id=message['id']).execute()
 
     except HttpError as error:
         # TODO(developer) - Handle errors from gmail API.
-        print(f'An error occurred: {error}')
+        log.error(f'An error occurred: {error}')
 
 
 if __name__ == '__main__':
