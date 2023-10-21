@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import os.path
+import datetime
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -45,7 +46,10 @@ def main():
         service = build('gmail', 'v1', credentials=creds)
         #results = service.users().labels().list(userId='me').execute()
 
-        results = service.users().messages().list(userId='me', labelIds=[label_30d, 'INBOX'], q='before:2023/10/01').execute()
+
+        days_30_ago = (datetime.datetime.now() - datetime.timedelta(30)).strftime('%Y/%m/%d')
+
+        results = service.users().messages().list(userId='me', labelIds=[label_30d, 'INBOX'], q=f'before:{days_30_ago}').execute()
         messages = results.get('messages', [])
 
         if not messages:
