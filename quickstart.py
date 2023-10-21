@@ -18,7 +18,8 @@ SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googlea
 # and iterated `label in labels`, printing label['name'] and label['id']
 
 label_30d = 'Label_7629676837455866619'
-label_90 = 'Label_8043081018145399528'
+label_60d = 'Label_6333807318822307091'
+label_90d = 'Label_8043081018145399528'
 
 def main():
     """Shows basic usage of the Gmail API.
@@ -47,21 +48,29 @@ def main():
         service = build('gmail', 'v1', credentials=creds)
         #results = service.users().labels().list(userId='me').execute()
 
+        def trash_messages_before(before, labelIds=None):
+
+            results = service.users().messages().list(userId='me', labelIds=labelIds or [], q=f'before:{before}').execute()
+            messages = results.get('messages', [])
+
+            if not messages:
+                log.info('NO messages to delet ')
+                return
+
+            log.info(f'Trashing {len(messages)} messages')
+            for message in messages:
+                result = service.users().messages().trash(userId='me', id=message['id']).execute()
+                print(result)
+                #message_data = service.users().messages().get(userId='me', id=message['id']).execute()
+
 
         days_30_ago = (datetime.datetime.now() - datetime.timedelta(30)).strftime('%Y/%m/%d')
+        days_60_ago = (datetime.datetime.now() - datetime.timedelta(60)).strftime('%Y/%m/%d')
+        days_90_ago = (datetime.datetime.now() - datetime.timedelta(90)).strftime('%Y/%m/%d')
 
-        results = service.users().messages().list(userId='me', labelIds=[label_30d, 'INBOX'], q=f'before:{days_30_ago}').execute()
-        messages = results.get('messages', [])
-
-        if not messages:
-            log.warn('NO messages to delet ')
-            return
-
-        log.info(f'Trashing {len(messages)} messages')
-        for message in messages:
-            result = service.users().messages().trash(userId='me', id=message['id']).execute()
-            print(result)
-            #message_data = service.users().messages().get(userId='me', id=message['id']).execute()
+        trash_messages_before(days_30_ago, [label_30d, 'INBOX'])
+        trash_messages_before(days_60_ago, [label_60d, 'INBOX'])
+        trash_messages_before(days_90_ago, [label_90d, 'INBOX'])
 
     except HttpError as error:
         # TODO(developer) - Handle errors from gmail API.
