@@ -67,10 +67,15 @@ def main():
         days_30_ago = (datetime.datetime.now() - datetime.timedelta(30)).strftime('%Y/%m/%d')
         days_60_ago = (datetime.datetime.now() - datetime.timedelta(60)).strftime('%Y/%m/%d')
         days_90_ago = (datetime.datetime.now() - datetime.timedelta(90)).strftime('%Y/%m/%d')
+        days_180_ago = (datetime.datetime.now() - datetime.timedelta(180)).strftime('%Y/%m/%d')
 
+        ## trash based on lifecycle ##
         trash_messages_before(days_30_ago, [label_30d, 'INBOX'])
         trash_messages_before(days_60_ago, [label_60d, 'INBOX'])
         trash_messages_before(days_90_ago, [label_90d, 'INBOX'])
+
+        ## trash some built-in categories ##
+        trash_messages_before(days_180_ago, ['CATEGORY_PROMOTIONS', 'INBOX'])
 
     except HttpError as error:
         # TODO(developer) - Handle errors from gmail API.
